@@ -1,6 +1,7 @@
 # SQLite to Amazon S3 backup script
 
-**Requirements:  
+**Requirements:**
+
 * Python
 * Boto (http://code.google.com/p/boto/)
 
