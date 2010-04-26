@@ -73,6 +73,9 @@ class S3_Manager(object):
         """
         file_list = []
         for root, dirs, files in os.walk(self.database_directory):
+            for d in self.ignore:
+                if d in dirs:
+                    dirs.remove(d)
             for f in files:
                 extension = os.path.splitext(f)[1]
                 if extension == ".db":
