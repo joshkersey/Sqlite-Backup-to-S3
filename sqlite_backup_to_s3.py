@@ -7,11 +7,25 @@ from boto.s3.key import Key
 class S3_Manager(object):
     
     def __init__(self):
+        """
+        self.ignore is a list of directory strings you want to ignore at
+        any level of the database_directory.
+        
+        Example:
+        Directory = "/usr/local/test/"
+        To ignore all files and other directories in the 'test' directory:
+            self.ignore = ['test']
+        
+        To ignore all files and other directories in the 'usr' directory:
+            self.ignore = ['usr']
+        
+        """
         self.database_directory = "<directory_to_search>"
         self.bucket = "<S3_bucket_name>"
         self.aws_access_key = "<AWS_access_key>"
         self.aws_secret_key = "<AWS_secret_key>"
         self.database_expiry_date = date.today() - timedelta(days=30)
+        self.ignore = []
         
     def get_connection(self):
         """
@@ -30,7 +44,7 @@ class S3_Manager(object):
         for k in keys:
             kd = k.name[-10:]
             key_date = date(int(kd[:4]), int(kd[5:7]), int(kd[-2:]))
-            if key_date < database_expiry_date and key_date.day != 1:
+            if key_date < self.database_expiry_date and key_date.day != 1:
                 k.delete()
                 
     def backup_db(self, conn):
@@ -47,7 +61,10 @@ class S3_Manager(object):
             key_name = item['filename'] + "_%s" % date.today()
             key = bucket.new_key(key_name)
             key.set_metadata('Content-Type', 'text/plain')
-            upload = key.set_contents_from_filename(item['path'], policy='private')
+            try:
+                upload = key.set_contents_from_filename(item['path'], policy='private')
+            except S3ResponseError:
+                # Handle errors returned from AWS here
                 
     def find_files(self):
         """
